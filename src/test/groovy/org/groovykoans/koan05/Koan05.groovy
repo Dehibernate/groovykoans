@@ -58,9 +58,7 @@ class Koan05 extends GroovyTestCase {
         // What will range equal?
         def expectedRange = []
         // ------------ START EDITING HERE ----------------------
-
         6.times { expectedRange << 5+it }
-
         // ------------ STOP EDITING HERE  ----------------------
         assert range == expectedRange
     }
@@ -72,9 +70,7 @@ class Koan05 extends GroovyTestCase {
         // http://docs.groovy-lang.org/latest/html/groovy-jdk/java/lang/Object.html#eachWithIndex(groovy.lang.Closure)
         def rangeResult = []
         // ------------ START EDITING HERE ----------------------
-
         ('a'..'z').eachWithIndex{it,i -> if(i%2==0) rangeResult << it }
-        
         // ------------ STOP EDITING HERE  ----------------------
         assert rangeResult == ['a', 'c', 'e', 'g', 'i', 'k', 'm', 'o', 'q', 's', 'u', 'w', 'y']
     }
