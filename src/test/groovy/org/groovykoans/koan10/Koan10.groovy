@@ -34,8 +34,8 @@ class Koan10 extends GroovyTestCase {
         // and find out how many movies are listed.
         def movieCount
         // ------------ START EDITING HERE ----------------------
-
-
+        def xml = new XmlSlurper().parse(new File('src/test/groovy/org/groovykoans/koan10/movies.xml'))
+        movieCount = xml.movie.size()
         // ------------ STOP EDITING HERE  ----------------------
         assert movieCount == 7
 
@@ -43,16 +43,14 @@ class Koan10 extends GroovyTestCase {
         // Hint: pay attention to the type of objects you're getting.
         List<String> moviesWithThe = []
         // ------------ START EDITING HERE ----------------------
-
-
+        moviesWithThe = xml.movie.title.findAll { it ==~ /(?i).*the.*/ }.collect { it.toString() }
         // ------------ STOP EDITING HERE  ----------------------
         assert moviesWithThe.containsAll(['Conan the Barbarian', 'The Expendables', 'The Terminator'])
 
         // How many movie ids have a value greater than 5?
         def movieIdsGreaterThan5
         // ------------ START EDITING HERE ----------------------
-
-
+        movieIdsGreaterThan5 = xml.movie.findAll { it.@id.toInteger() > 5 }.size()
         // ------------ STOP EDITING HERE  ----------------------
         assert movieIdsGreaterThan5 == 2
     }
@@ -65,8 +63,16 @@ class Koan10 extends GroovyTestCase {
 
         List<String> sortedList = []
         // ------------ START EDITING HERE ----------------------
-
-
+        def xml = new XmlSlurper().parse(new File('src/test/groovy/org/groovykoans/koan10/movies.xml'))
+        sortedList = xml.movie
+        .sort{ m1,m2 -> 
+            if(m1.year != m2.year){
+                return m1.year.toInteger() <=> m2.year.toInteger() 
+            }else{
+                return m1.title.toString() <=> m2.title.toString()
+            }
+        }
+        .collect { it.title.toString() }
         // ------------ STOP EDITING HERE  ----------------------
         assert sortedList == ['Conan the Barbarian', 'The Terminator', 'Predator',
                 'Kindergarten Cop', 'Total Recall', 'True Lies', 'The Expendables']
@@ -76,7 +82,7 @@ class Koan10 extends GroovyTestCase {
         // Groovy's MarkupBuilder allows you to create tree structures very easily.
         // Read here: http://groovy-lang.org/processing-xml.html#_markupbuilder
         // And here: http://docs.groovy-lang.org/latest/html/api/groovy/xml/MarkupBuilder.html
-
+        
         // Let's try to create the following HTML in code:
         // <html>
         // <body>
@@ -90,8 +96,13 @@ class Koan10 extends GroovyTestCase {
         // Using MarkupBuilder, create the above html as String
         def html
         // ------------ START EDITING HERE ----------------------
-
-
+        def writer = new StringWriter()
+        def builder = new MarkupBuilder(writer).html(){
+            body(){
+                h1('title')
+            }
+        }
+        html = writer.toString()
         // ------------ STOP EDITING HERE  ----------------------
         assert formatXml(html) == formatXml("<html><body><h1>title</h1></body></html>")
     }
@@ -107,8 +118,13 @@ class Koan10 extends GroovyTestCase {
 
         String convertedXml
         // ------------ START EDITING HERE ----------------------
-
-
+        def xml = new XmlSlurper().parse(new File('src/test/groovy/org/groovykoans/koan10/movies.xml'))    
+        def writer = new StringWriter()
+        def builder = new MarkupBuilder(writer)
+        builder.movies(){
+            xml.movie.each { builder.movie('id': it.@id.toString(),title: it.title.toString(), year: it.year.toString() ) }  
+        }
+        convertedXml = writer.toString()
         // ------------ STOP EDITING HERE  ----------------------
         def expected = """|<movies>
                             |  <movie id='6' title='Total Recall' year='1990' />
@@ -142,8 +158,7 @@ class Koan10 extends GroovyTestCase {
         // http://ant.apache.org/manual/Tasks/copy.html
         def baseDir = 'src/test/groovy/org/groovykoans/koan10'
         // ------------ START EDITING HERE ----------------------
-
-
+        new AntBuilder().copy(file: "${baseDir}/movies.xml", toFile: "${baseDir}/movies_copy.xml")
         // ------------ STOP EDITING HERE  ----------------------
         assert new File("${baseDir}/movies_copy.xml").exists()
     }
@@ -156,8 +171,11 @@ class Koan10 extends GroovyTestCase {
         def baseDir = 'src/test/groovy/org/groovykoans/koan10'
         def actualChecksum
         // ------------ START EDITING HERE ----------------------
-
-
+        actualChecksum = new AntBuilder()
+        .checksum(file: "${baseDir}/movies.xml", property: 'checksum')
+            .project
+            .properties
+            .checksum
         // ------------ STOP EDITING HERE  ----------------------
         assert actualChecksum == '9160b6a6555e31ebc01f30c1db7e1277'
     }
